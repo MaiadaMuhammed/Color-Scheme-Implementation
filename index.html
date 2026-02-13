@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Color System Implementation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+    /* ===== 1. Base Variables & Reset ===== */
+    :root {
+        /* Default Theme: Modern Blue (Tech/SaaS) */
+        --primary: #2563EB;
+        --secondary: #3B82F6;
+        --accent: #F59E0B;
+        --bg-body: #F1F5F9;
+        --bg-card: #FFFFFF;
+        --text-main: #0F172A;
+        --text-muted: #64748B;
+        --border: #E2E8F0;
+        --shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.2);
+    }
+
+    /* Theme: Elegant Gold (Fintech/Luxury) */
+    .theme-gold {
+        --primary: #0F172A;
+        --secondary: #D97706;
+        --accent: #10B981;
+        --bg-body: #FAFAF9;
+        --bg-card: #FFFFFF;
+        --text-main: #1C1917;
+        --text-muted: #57534E;
+        --border: #E7E5E4;
+        --shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.15);
+    }
+
+    /* Theme: Vibrant Cyber (Creative/Marketing) */
+    .theme-cyber {
+        --primary: #7C3AED;
+        --secondary: #DB2777;
+        --accent: #06B6D4;
+        --bg-body: #FDF4FF;
+        --bg-card: #FFFFFF;
+        --text-main: #3730A3;
+        --text-muted: #86198F;
+        --border: #F5D0FE;
+        --shadow: 0 10px 30px -10px rgba(219, 39, 119, 0.25);
+    }
+
+    /* Theme: Deep Dark (Modern Dark Mode) */
+    .theme-dark {
+        --primary: #60A5FA;
+        --secondary: #A78BFA;
+        --accent: #34D399;
+        --bg-body: #0B1120;
+        --bg-card: #1E293B;
+        --text-main: #F8FAFC;
+        --text-muted: #94A3B8;
+        --border: #334155;
+        --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: var(--bg-body);
+        color: var(--text-main);
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* ===== 2. Layout & UI Components ===== */
+    .container {
+        width: 100%;
+        max-width: 900px;
+        padding: 60px 20px;
+    }
+
+    header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0 0 10px 0;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1px;
+    }
+
+    header p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    /* Theme Switcher */
+    .theme-switcher {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 50px;
+        background: var(--bg-card);
+        padding: 10px;
+        border-radius: 50px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .theme-btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 40px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text-muted);
+        transition: 0.3s;
+    }
+
+    .theme-btn:hover { background: var(--bg-body); }
+    
+    .theme-btn.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Dashboard Cards */
+    .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow);
+    }
+
+    h2 { margin-top: 0; font-size: 1.25rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    
+    /* Palette Grid */
+    .palette-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 15px;
+    }
+
+    .swatch {
+        height: 100px;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 15px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .swatch::after {
+        content: attr(data-hex);
+        font-size: 0.75rem;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    /* UI Preview */
+    .ui-preview {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-body);
+        border-radius: 16px;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+        padding: 10px 22px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .badge {
+        background: var(--accent);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    /* Tech Specs Area */
+    .specs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    @media (max-width: 600px) { .specs-grid { grid-template-columns: 1fr; } }
+
+    .code-block {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 12px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        height: 120px;
+        width: 100%;
+        border: none;
+        resize: none;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; }
+    .status-pass .dot { background: #10B981; box-shadow: 0 0 10px #10B981; }
+    .status-fail .dot { background: #EF4444; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Brand Color System</h1>
+        <p>Scalable, accessible design tokens for Marketing Decks</p>
+    </header>
+
+    <div class="theme-switcher">
+        <button class="theme-btn active" onclick="setTheme('default', this)">SaaS Blue</button>
+        <button class="theme-btn" onclick="setTheme('gold', this)">Fintech Gold</button>
+        <button class="theme-btn" onclick="setTheme('cyber', this)">Creative Cyber</button>
+        <button class="theme-btn" onclick="setTheme('dark', this)">Dark Mode</button>
+    </div>
+
+    <div class="card">
+        <h2> Active Palette</h2>
+        <div class="palette-grid">
+            <div class="swatch" id="boxPrimary">Primary</div>
+            <div class="swatch" id="boxSecondary">Secondary</div>
+            <div class="swatch" id="boxAccent">Accent</div>
+            <div class="swatch" id="boxBg" style="color:var(--text-main); border:1px solid var(--border)">Background</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2> UI Components Preview</h2>
+        <div class="ui-preview">
+            <button class="btn-primary">Get Started</button>
+            <button class="btn-secondary">Learn More</button>
+            <span class="badge">New Feature</span>
+            <div style="margin-left:auto; font-weight:600; color:var(--primary)">Linked Text &rarr;</div>
+        </div>
+    </div>
+
+    <div class="specs-grid">
+        <div class="card">
+            <h2> Accessibility Check</h2>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:15px;">Contrast ratio between Primary color & White text.</p>
+            <div id="contrastStatus" class="status-indicator">Checking...</div>
+        </div>
+
+        <div class="card">
+            <h2> CSS Tokens Export</h2>
+            <textarea id="cssOutput" class="code-block" readonly></textarea>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function setTheme(themeName, btn) {
+        // Remove old classes
+        document.body.classList.remove('theme-gold', 'theme-cyber', 'theme-dark');
+        
+        // Add new class if not default
+        if (themeName !== 'default') {
+            document.body.classList.add(`theme-${themeName}`);
+        }
+
+        // Update Buttons
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Refresh Data
+        setTimeout(updateData, 50); // Small delay to let CSS transition start
+    }
+
+    function updateData() {
+        const styles = getComputedStyle(document.body);
+        const primary = styles.getPropertyValue('--primary').trim();
+        const secondary = styles.getPropertyValue('--secondary').trim();
+        const accent = styles.getPropertyValue('--accent').trim();
+        const bg = styles.getPropertyValue('--bg-body').trim();
+
+        // Update Swatches
+        updateSwatch('boxPrimary', primary);
+        updateSwatch('boxSecondary', secondary);
+        updateSwatch('boxAccent', accent);
+        updateSwatch('boxBg', bg);
+
+        // Check Contrast
+        checkContrast(primary);
+
+        // Export Code
+        document.getElementById('cssOutput').value = 
+`:root {
+  --primary: ${primary};
+  --secondary: ${secondary};
+  --accent: ${accent};
+  --bg: ${bg};
+}`;
+    }
+
+    function updateSwatch(id, color) {
+        const el = document.getElementById(id);
+        el.style.backgroundColor = color;
+        el.setAttribute('data-hex', color.toUpperCase());
+    }
+
+    // Simple Contrast Checker (Luminance logic)
+    function checkContrast(hex) {
+        // Convert hex to rgb
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 4) {
+            r = "0x" + hex[1] + hex[1];
+            g = "0x" + hex[2] + hex[2];
+            b = "0x" + hex[3] + hex[3];
+        } else if (hex.length === 7) {
+            r = "0x" + hex[1] + hex[2];
+            g = "0x" + hex[3] + hex[4];
+            b = "0x" + hex[5] + hex[6];
+        }
+        
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const resultDiv = document.getElementById('contrastStatus');
+
+        if (luminance > 0.6) {
+             // Bright background, white text might be hard
+             resultDiv.innerHTML = '<span class="dot" style="background:orange"></span> <span>Warning: Low Contrast on White</span>';
+             resultDiv.className = 'status-indicator';
+        } else {
+            // Dark background, white text is good
+            resultDiv.innerHTML = '<span class="dot"></span> <span style="color:var(--text-main)">AA Compliant (Readable)</span>';
+            resultDiv.className = 'status-indicator status-pass';
+        }
+    }
+
+    // Init
+    updateData();
+</script>
+
+</body>
+</html>
