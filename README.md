@@ -12,7 +12,7 @@ A professional, lightweight dashboard designed to visualize, test, and export ac
 
 This project is a high-fidelity **Color System Implementation** developed to help stakeholders and designers visualize how brand colors interact in a real-world UI environment. It features instant theme switching, accessibility checking, and automated design token generation.
 
-**Live Demo:** [Insert Link Here if you have GitHub Pages active]
+**Live Demo:** [https://maiadamuhammed.github.io/Color-Scheme-Implementation/]
 
 ## ✨ Key Features
 
